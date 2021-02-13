@@ -79,7 +79,13 @@ client.on("message", (message) => {
             message.guild.iconURL()
           );
         message.channel.send(embed);
-      });
+      }).catch(() => (error) => {
+          const embederror = new Discord.MessageEmbed()
+            .setColor("#f09719")
+            .setDescription("Error Retrieving Variants");
+          message.send.channel(embederror);
+          console.log(error);
+        });
     } catch (error) {
       const embed = new Discord.MessageEmbed()
         .setColor("#f09719")
