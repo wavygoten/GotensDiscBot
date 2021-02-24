@@ -93,6 +93,100 @@ client.on("message", (message) => {
       console.log(error);
     }
   }
+  if (command == "stockx") {
+      const query = args;
+      try {
+        axios({
+          method: "get",
+          url: `https://stockx.com/api/browse?&_search=${query}`,
+          headers: {
+            "User-Agent":
+              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36",
+            Accept: "*/*",
+            "Accept-Encoding": "gzip, deflate, br",
+            Connection: "keep-alive",
+          },
+        })
+          .then(function (response) {
+            let document = response.data;
+            let firstItem = document.Products[0];
+
+            let img = firstItem.media.thumbUrl;
+            let title = firstItem.title;
+            let styleId = firstItem.styleId;
+            let releaseDate = firstItem.releaseDate;
+            let url = `https://stockx.com/${firstItem.urlKey}`;
+            let highestBid = firstItem.market.highestBid;
+            let highestBidSize = firstItem.market.highestBidSize;
+            let lowestAsk = firstItem.market.lowestAsk;
+            let lowestAskSize = firstItem.market.lowestAskSize;
+            let retailPrice = firstItem.retailPrice;
+            const embed = new Discord.MessageEmbed()
+              .setColor("#f09719")
+              .setTitle(title)
+              .setURL(url)
+              .setThumbnail(img)
+              .addFields(
+                {
+                  name: "SKU/ID",
+                  value: styleId,
+                  inline: true,
+                },
+                {
+                  name: "Release Date",
+                  value: releaseDate,
+                  inline: true,
+                },
+                {
+                  name: "Retail Price",
+                  value: `$${retailPrice}`,
+                  inline: true,
+                },
+                { name: "\u200B", value: "\u200B" },
+
+                {
+                  name: "Highest Bid",
+                  value: `$${highestBid}`,
+                  inline: true,
+                },
+                {
+                  name: "Highest Bid Size",
+                  value: `${highestBidSize}`,
+                  inline: true,
+                },
+                { name: "\u200B", value: "\u200B" },
+                {
+                  name: "Lowest Ask",
+                  value: `$${lowestAsk}`,
+                  inline: true,
+                },
+                {
+                  name: "Lowest Ask Size",
+                  value: `${lowestAskSize}`,
+                  inline: true,
+                }
+              )
+              .setFooter(
+                message.guild.name + " - " + message.author.username,
+                message.guild.iconURL()
+              );
+            message.channel.send(embed);
+          })
+          .catch(() => (error) => {
+            const embederror = new Discord.MessageEmbed()
+              .setColor("#f09719")
+              .setDescription("No product found, try another search.");
+            message.send.channel(embederror);
+            console.log(error);
+          });
+      } catch (error) {
+        const embederror = new Discord.MessageEmbed()
+          .setColor("#f09719")
+          .setDescription("No product found, try another search.");
+        message.send.channel(embederror);
+        console.log(error);
+      }
+    }
 });
 
 client.login(token);
