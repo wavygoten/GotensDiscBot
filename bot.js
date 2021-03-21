@@ -15,7 +15,7 @@ for (const token of tokens) {
     console.log(`Logged in as ${client.user.tag}!`);
   });
 
-  client.on("message", (message) => {
+  client.on("message", async (message) => {
     const args = message.content.slice(prefix.length).trim().split(/ +/g);
     const command = args.shift().toLowerCase();
     if (!message.content.startsWith(prefix) || message.author.bot) return;
@@ -267,6 +267,71 @@ for (const token of tokens) {
           .setDescription("No product found, try another search.");
         message.send.channel(embederror);
         console.log(error);
+      }
+    }
+    if (command == "lv") {
+      try {
+        const zip = args[0];
+        let lname = [];
+        let laddy = [];
+        let lphone = [];
+        var latitude = zipcodes.lookup(zip).latitude.toFixed(2);
+        var longitude = zipcodes.lookup(zip).longitude.toFixed(2);
+        var vaccineEndpoint = `https://api.us.castlighthealth.com/vaccine-finder/v1/provider-locations/search?medicationGuids=779bfe52-0dd8-4023-a183-457eb100fccc,a84fb9ed-deb4-461c-b785-e17c782ef88b,784db609-dc1f-45a5-bad6-8db02e79d44f&lat=${latitude}&long=${longitude}&radius=50`;
+        await axios
+          .get(vaccineEndpoint)
+          .then((res) => {
+            const document = res.data;
+            const providers = document.providers;
+            for (provider in providers) {
+              if (providers[provider].in_stock) {
+                lname.push(providers[provider].name);
+                laddy.push(providers[provider].address1);
+                lphone.push(providers[provider].phone);
+              }
+            }
+            const name = lname.slice(0, 20).join("\n");
+            const addy = laddy.slice(0, 20).join("\n");
+            const phone = lphone.slice(0, 20).join("\n");
+
+            const embed = new Discord.MessageEmbed()
+              .setTitle("20 Vaccine Locations Within 50 miles IN STOCK")
+              .setColor("#f09719")
+              .addFields({
+                name: "Store",
+                value: "```" + name + "```",
+                inline: true,
+              })
+              .addFields({
+                name: "Address",
+                value: "```" + addy + "```",
+                inline: true,
+              })
+              .addFields({
+                name: "Phone",
+                value: "```" + phone + "```",
+                inline: true,
+              })
+              .setFooter(
+                message.guild.name + " | " + "Vaccine Monitor",
+                message.guild.iconURL()
+              );
+
+            message.channel.send(embed);
+            // webhook({ username: "Vaccine Webhook", embeds: [embed] });
+
+            // [0].in_stock;
+
+            // fs.writeFile("vaccine.txt", document, (err) => {
+            //   // In case of a error throw err.
+            //   if (err) throw err;
+            // });
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      } catch (err) {
+        console.log(err);
       }
     }
   });
