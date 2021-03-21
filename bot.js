@@ -7,6 +7,7 @@ const prefix = "-";
 const axios = require("axios");
 const cheerio = require("cheerio");
 const fs = require("fs");
+const zipcodes = require("zipcodes");
 
 for (const token of tokens) {
   const client = new Discord.Client();
